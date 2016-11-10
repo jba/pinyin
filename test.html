@@ -1,0 +1,23 @@
+<html>
+  <head>
+    <script type="text/javascript">
+      function play(id) { document.getElementById(id).play() }
+      function play3(id) {
+      play(id);
+      setTimeout(function() { play(id)}, 1000);
+     setTimeout(function() { play(id)}, 2000);
+     }
+      </script>
+</head>
+<body>
+  Hello, here is audio:
+  <input type="button" onclick='play3("n1")'/>
+
+
+  <audio id="n1">
+    <source src="https://www.yoyochinese.com/files/chi3.mp3" type="audio/mpeg"/>
+       no audio support
+  </audio>
+  end of audio
+</body>
+</html>
