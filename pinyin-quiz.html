@@ -2,6 +2,17 @@
   <head>
     <script type="text/javascript">
 
+      var nQuestions = 0
+
+      var bases = ["chi", "wo", "wei", "wai", "wu"];
+      var pinyins = [];
+      for (var i = 0; i < bases.length; i++) {
+         for (var tone = 1; tone <= 4; tone++) {
+             pinyins.push(bases[i] + tone);
+         }
+      }
+     console.log(pinyins);
+      
       function play(id) {
         document.getElementById(id).play()
       }
@@ -12,16 +23,55 @@
         setTimeout(function() { play(id)}, 2000);
       }
 
+      function button(text, func) {
+	  var b = document.createElement("button");
+	  b.innerHTML = text;
+	  b.onclick = func;
+	  return b
+      }
+
+      function pick() {
+          var i = Math.floor(Math.random() * pinyins.length);
+          return pinyins[i];
+      }
+        
       function addQuestion() {
-      var q = document.createElement("div")
-      q.appendChild(document.createTextNode("question"))
-      document.body.appendChild(q)
+      nQuestions++;
+      var answer = pick();
+      var q = document.createElement("div");
+
+      var a = document.createElement("audio");
+      a.id = "a" + nQuestions;
+      var as = document.createElement("source");
+      as.src = "https://www.yoyochinese.com/files/" + answer + ".mp3";
+      as.type = "audio/mpeg";
+      a.appendChild(as);
+
+      var t = document.createElement("input");
+      t.id = "t" + nQuestions;
+      t.type = "text";
+      t.size = 10;				    
+
+      var result = document.createElement("span");
+      
+      q.appendChild(document.createTextNode("#" + nQuestions + " "));
+      q.appendChild(a);
+      q.appendChild(t);
+      q.appendChild(document.createTextNode(" "));
+      q.appendChild(button("Play Again", function() { play3(a.id) }));
+      q.appendChild(document.createTextNode(" "))
+      q.appendChild(button("Check", function() {  if (t.value == answer) { result.innerHTML = "yes" } else { result.innerHTML = "no, " + answer }}));
+      q.appendChild(document.createTextNode(" "));
+      q.appendChild(result);
+      document.body.appendChild(q);
+      play3(a.id);				    
       }
 
     </script>
     <title>Pinyin Quiz</title>
   </head>
   <body>
-    <input type="button" text="Another" onclick='addQuestion()'/>
+    <button onclick='addQuestion()'>Add</button>
+    <br/>
   </body>
 </html>
