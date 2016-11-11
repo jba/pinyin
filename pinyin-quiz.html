@@ -1,0 +1,27 @@
+<html>
+  <head>
+    <script type="text/javascript">
+
+      function play(id) {
+        document.getElementById(id).play()
+      }
+
+      function play3(id) {
+        play(id);
+        setTimeout(function() { play(id)}, 1000);
+        setTimeout(function() { play(id)}, 2000);
+      }
+
+      function addQuestion() {
+      var q = document.createElement("div")
+      q.appendChild(document.createTextNode("question"))
+      document.body.appendChild(q)
+      }
+
+    </script>
+    <title>Pinyin Quiz</title>
+  </head>
+  <body>
+    <input type="button" text="Another" onclick='addQuestion()'/>
+  </body>
+</html>
