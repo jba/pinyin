@@ -1,6 +1,7 @@
 var nQuestions = 0
 
 var bases = ["chi", "wo", "wei", "wai", "wu"];
+
 var pinyins = [];
 
 for (var i = 0; i < bases.length; i++) {
@@ -8,16 +9,54 @@ for (var i = 0; i < bases.length; i++) {
 	pinyins.push(bases[i] + tone);
     }
 }
+
+var pinyinSet = new Set(pinyins);
       
-function play(id) {
-    console.log("play", id);
-    document.getElementById(id).play();
+function addQuestion() {
+    nQuestions++;
+    var answer = pickPinyin();
+    var result = document.createElement("span");
+    var t = document.createElement("input");
+    t.id = "t" + nQuestions;
+    t.type = "text";
+    t.size = 10;
+    t.onkeydown = function() { 
+	if (event.keyCode == 13) 
+	    checkResponse(t.value, answer, result);
+    }
+    var children = [
+		    spacer(),
+		    document.createTextNode("#" + nQuestions + " "),
+		    t, 
+		    spacer(),
+		    playButton("Play Again", answer),
+		    spacer(),
+		    result
+		    ];
+    var q = document.createElement("div");
+    q.style="line-height: 30px";
+    for (var i = 0; i < children.length; i++) {
+	q.appendChild(children[i]);
+    }
+    document.getElementById("questions").appendChild(q);
+
+    play3(audio(answer));
 }
 
-var intervalMillis = 1800
+function checkResponse(response, answer, resultNode) {
+    if (response == answer) { 
+	resultNode.innerHTML = "yes";
+    } else { 
+	resultNode.innerHTML = "no, " + answer;
+	// var a = audio(response);
+	//	resultNode.parentNode.insertBefore(playButton(response, a), resultNode.nextSibling)
+    }
+}
 
-function play3(id) {
-    var f = function() { play(id); };
+var intervalMillis = 1800;
+
+function play3(audio) {
+    var f = function() { audio.play(); };
     setTimeout(f, 10);
     setTimeout(f, 10+intervalMillis);
     setTimeout(f, 10+2*intervalMillis);
@@ -30,53 +69,31 @@ function button(text, func) {
     return b;
 }
 
-function pick() {
+function playButton(text, pinyin) {
+    return button(text, function() { audio(pinyin).play() });
+}
+    
+
+function pickPinyin() {
     var i = Math.floor(Math.random() * pinyins.length);
     return pinyins[i];
 }
 
-function spacer() { return document.createTextNode(" "); }
-        
+var audios = new Map();
 
-function addQuestion() {
-    nQuestions++;
-    var answer = pick();
-    var q = document.createElement("div");
-
+function audio(pinyin) {
+    if (audios.has(pinyin)) {
+	return audios.get(pinyin);
+    }
     var a = document.createElement("audio");
-    a.id = "a" + nQuestions;
+    console.log("creating audio for " + pinyin);
     var as = document.createElement("source");
-    as.src = "https://www.yoyochinese.com/files/" + answer + ".mp3";
+    as.src = "https://www.yoyochinese.com/files/" + pinyin + ".mp3";
     as.type = "audio/mpeg";
     a.appendChild(as);
-
-    var t = document.createElement("input");
-    t.id = "t" + nQuestions;
-    t.type = "text";
-    t.size = 10;				    
-
-    var result = document.createElement("span");
-      
-    var children = [
-		    document.createTextNode("#" + nQuestions + " "),
-		    a, 
-		    t, 
-		    spacer(),
-		    button("Play Again", function() { play(a.id) }),
-		    spacer(),
-		    button("Check", function() {  
-			    if (t.value == answer) { 
-				result.innerHTML = "yes";
-			    } else { 
-				result.innerHTML = "no, " + answer;
-			    }
-			}),
-		    spacer(),
-		    result
-		    ];
-    for (var i = 0; i < children.length; i++) {
-	q.appendChild(children[i]);
-    }
-    document.body.appendChild(q);
-    play3(a.id);				    
+    audios.set(pinyin, a);
+    return a;
 }
+
+function spacer() { return document.createTextNode(" "); }
+        
