@@ -47,9 +47,15 @@ function checkResponse(response, answer, resultNode) {
     if (response == answer) { 
 	resultNode.innerHTML = "yes";
     } else { 
-	resultNode.innerHTML = "no, " + answer;
-	// var a = audio(response);
-	//	resultNode.parentNode.insertBefore(playButton(response, a), resultNode.nextSibling)
+	resultNode.innerHTML = "<b>" + answer + "</b>. ";
+	if (!pinyinSet.has(response)) {
+	    resultNode.innerHTML += "&nbsp;&nbsp;\"" + response + "\" is not a valid pinyin.";
+	} else {
+	    insertAfter(resultNode, button("Compare " + answer + " with " + response, function() {
+			audio(answer).play();
+			audio(response).play();
+		    }));
+	}
     }
 }
 
@@ -73,6 +79,10 @@ function playButton(text, pinyin) {
     return button(text, function() { audio(pinyin).play() });
 }
     
+function insertAfter(aNode, newNode) {
+    aNode.parentNode.insertBefore(newNode, aNode.nextSibling);
+}
+
 
 function pickPinyin() {
     var i = Math.floor(Math.random() * pinyins.length);
@@ -85,12 +95,7 @@ function audio(pinyin) {
     if (audios.has(pinyin)) {
 	return audios.get(pinyin);
     }
-    var a = document.createElement("audio");
-    console.log("creating audio for " + pinyin);
-    var as = document.createElement("source");
-    as.src = "https://www.yoyochinese.com/files/" + pinyin + ".mp3";
-    as.type = "audio/mpeg";
-    a.appendChild(as);
+    var a = new Audio("https://www.yoyochinese.com/files/" + pinyin + ".mp3");
     audios.set(pinyin, a);
     return a;
 }
