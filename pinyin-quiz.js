@@ -34,9 +34,9 @@ var bases = [
      "wen", "dun", "tun", "lun", "gun", "kun", "hun", "zun", "cun", "sun", "zhun", "chun", "shun", "run", 
      "weng", 
      "wo", "duo", "tuo", "nuo", "luo", "guo", "kuo", "huo", "zuo", "cuo", "suo", "zhuo", "chuo", "shuo", "ruo", 
-     "yu", "nü", "lü", "ju", "qu", "xu", 
+     "yu", "n\u00FC", "l\u00FC", "ju", "qu", "xu", 
      "yuan", "juan", "quan", "xuan", 
-     "yue", "nüe", "lüe", "jue", "que", "xue", 
+     "yue", "n\u00FCe", "l\u00FCe", "jue", "que", "xue", 
      "yun", "jun", "qun", "xun"
 ];
 
@@ -50,17 +50,16 @@ for (var i = 0; i < bases.length; i++) {
 
 var pinyinSet = new Set(pinyins);
 
-// Some filenames are of the form xxx_0.mp3.
-var underscoreZeroPinyins = new Set(["zhi1", "zhi2", "a3", "sai1", "sai2", "sai3", "sai4", "tu1", 
-				     "xue1", "xue2", "xue3", "xue4"]);
+var correctResponses = new Set();
       
 function addQuestion() {
-    nQuestions++;
     var sp = selectPinyins(document.getElementById("pattern").value);
+    console.log("choosing from " + sp.length + " pinyins");
     if (sp.length == 0) {
-	alert("no pinyins match the pattern");
+	alert("no pinyins to choose from");
 	return;
     }
+    nQuestions++;
     var answer = pickFromList(sp);
     var result = document.createElement("span");
     var t = document.createElement("input");
@@ -99,6 +98,7 @@ function checkResponse(response, answer, resultNode) {
     resultNode.innerHTML = "&nbsp;&nbsp;"
     if (response == answer) { 
 	resultNode.innerHTML += "Yes!";
+	correctResponses.add(response);
     } else { 
 	var last =response[response.length-1];
 	if (!(last=="1" || last=="2" || last=="3" || last=="4")) {
@@ -159,13 +159,45 @@ function pickFromList(list) {
 
 var audios = new Map();
 
+// Some filenames are of the form xxx_0.mp3.
+var fileReplacements = {
+    "zhi1": "zhi1_0",
+    "zhi2": "zhi2_0",
+    "a3": "a3_0",
+    "sai1": "sai1_0",
+    "sai2": "sai2_0",
+    "sai3": "sai3_0",
+    "sai4": "sai4_0",
+    "tu1": "tu1_0",
+    "xue1": "xue1_0",
+    "xue2": "xue2_0",
+    "xue3": "xue3_0",
+    "xue4": "xue4_0",
+    "n\u00FC1": "nv1",
+    "n\u00FC2": "nv2",
+    "n\u00FC3": "nv3",
+    "n\u00FC4": "nv4",
+    "l\u00FC1": "lv1",
+    "l\u00FC2": "lv2",
+    "l\u00FC3": "lv3",
+    "l\u00FC4": "lv4",
+    "n\u00FCe1": "nue1",
+    "n\u00FCe2": "nue2",
+    "n\u00FCe3": "nue3",
+    "n\u00FCe4": "nue4",
+    "l\u00FCe1": "lue1",
+    "l\u00FCe2": "lue2",
+    "l\u00FCe3": "lue3",
+    "l\u00FCe4": "lue4",
+};
+
 function audio(pinyin) {
     if (audios.has(pinyin)) {
 	return audios.get(pinyin);
     }
     var fname = pinyin;
-    if (underscoreZeroPinyins.has(pinyin))
-	fname += "_0";
+    if (pinyin in fileReplacements)
+	fname = fileReplacements[pinyin];
     var a = new Audio("https://www.yoyochinese.com/files/" + fname + ".mp3");
     audios.set(pinyin, a);
     return a;
@@ -174,11 +206,14 @@ function audio(pinyin) {
 function spacer() { return document.createTextNode(" "); }
         
 function selectPinyins(pattern) {
+    var repeat = !document.getElementById("norepeat").checked;
     var re = pattern.replace(/\*/g, ".*");
     var result = [];
-    for (var i = 0; i < pinyins.length; i++) 
-	if (pinyins[i].match(re))
-	    result.push(pinyins[i]);
+    for (var i = 0; i < pinyins.length; i++) {
+	var p = pinyins[i];
+	if (p.match(re) && (repeat || !correctResponses.has(p)))
+	    result.push(p);
+    }
     return result;
 }
 
